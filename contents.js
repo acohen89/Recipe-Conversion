@@ -5,12 +5,13 @@ let cupToGrams  = {"AP Flour": 130.0, "Bread Flour": 135.0, "WW Flour": 128.0, "
 let teaspoonToGrams = {"Salt": 5.0, "Yeast": 3.1,}
 let tablespoonToGrams = {"Butter": 14.1, "Honey": 21.25, "Cornstarch": 9.375, "Maple Syrup": 20.0}
 let element = Array.prototype.slice.call(document.querySelectorAll("li"));
-for (let i  = 0; i < element.length; i++) {  
+for (let i  = 0; i < element.length; i++) {
+    // console.log(element[i].textContent);  
     let ingredient = ingredientSearch(element[i].textContent);
     if(dictNotNull(ingredient)) {
-        console.log(ingredient);
-        console.log(element[i]);  
-        element[i].textContent = element[i].textContent.replace(ingredient["Item"], "REPLACED!");
+        // console.log(ingredient);
+        //console.log(element[i]);  
+        // element[i].textContent = element[i].textContent.replace(ingredient["Item"], "REPLACED!");
     }
     // console.log(element[i].textContent);
     //let tempArr = element[i].textContent.split(" ");
@@ -23,11 +24,12 @@ function ingredientSearch(foodEl){
     let found = false;
     let foodArr = foodEl.split(" ");
     for(let i = 0; i < foodArr.length; i++){
-        
-        if(typeof(foodArr[i][0]) == "string" && foodArr[i].length >= 0){
-            foodArr[i][0] = foodArr[i][0].toUpperCase();
-        }
-        
+        let strArr = foodArr[i].split("");
+        if(typeof(strArr[0]) == "string" && strArr.length >= 0 ){
+            console.log("Before: " + strArr[0]);
+            strArr[0] = strArr[0].toUpperCase();
+            console.log("After:" + strArr[0]);
+        } 
     }
     // TODO if it has oz or g in it, don't do anything   
     for(let i = 0; i < foodArr.length; i++){
@@ -71,3 +73,4 @@ function dictNotNull(dict){
 // first do if there is no number in the line, skip it
 // if it has oz or g in it, don't do anything 
 // add extracts and vanilla 
+// make a check for sugar functions, determining if it is brown or white
