@@ -9,9 +9,10 @@ for (let i  = 0; i < element.length; i++) {
     // console.log(element[i].textContent);  
     let ingredient = ingredientSearch(element[i].textContent);
     if(dictNotNull(ingredient)) {
-        // console.log(ingredient);
-        //console.log(element[i]);  
-        // element[i].textContent = element[i].textContent.replace(ingredient["Item"], "REPLACED!");
+        //console.log(ingredient);
+       console.log(element[i].textContent);  
+       element[i].textContent = element[i].textContent.replace(ingredient["Item"], "REPLACED!");
+       element[i].textContent = element[i].textContent.replace(ingredient["Item"].toLowerCase(), "REPLACED!"); // not replacing because one is capital one is lower case 
     }
     // console.log(element[i].textContent);
     //let tempArr = element[i].textContent.split(" ");
@@ -26,11 +27,11 @@ function ingredientSearch(foodEl){
     for(let i = 0; i < foodArr.length; i++){
         let strArr = foodArr[i].split("");
         if(typeof(strArr[0]) == "string" && strArr.length >= 0 ){
-            console.log("Before: " + strArr[0]);
-            strArr[0] = strArr[0].toUpperCase();
-            console.log("After:" + strArr[0]);
+            strArr[0] = strArr[0].toUpperCase();    
         } 
+        foodArr[i] = strArr.join("");
     }
+
     // TODO if it has oz or g in it, don't do anything   
     for(let i = 0; i < foodArr.length; i++){
         if(typeof(foodArr[i] != "int")) {
@@ -74,3 +75,4 @@ function dictNotNull(dict){
 // if it has oz or g in it, don't do anything 
 // add extracts and vanilla 
 // make a check for sugar functions, determining if it is brown or white
+// add vegetable stocks and broths 
