@@ -9,7 +9,7 @@ for (let i  = 0; i < element.length; i++) {
     let ingredient = ingredientSearch(element[i].textContent);
     if(dictNotNull(ingredient)) {
         console.log(ingredient);
-        console.log("replaced " + element[i].textContent);
+        console.log(element[i]);  
         element[i].textContent = element[i].textContent.replace(ingredient["Item"], "REPLACED!");
     }
     // console.log(element[i].textContent);
