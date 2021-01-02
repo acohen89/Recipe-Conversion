@@ -9,6 +9,12 @@ let metricDict = {"Tsp": "Teaspoon", "tsp": "Teaspoon", "TSP": "Teaspoon", "teas
 let possibleNums = {"1/2": 0.5, "1/3": 0.333, "1/4": 0.25, "1/8": 0.125, "2/3": 0.666, "3/4": 0.75, "3/8": 0.375, "5/8": 0.625, "7/8": 0.875}
 let teaspoonToGrams = {"Salt": 5.0, "Yeast": 3.1,}
 let tablespoonToGrams = {"Butter": 14.1, "Honey": 21.25, "Cornstarch": 9.375, "Maple Syrup": 20.0}
+function cupToTeaspoon(measurement){return 48.0 * measurement;}
+function cupToTablespoon(measurement){ return 16 * measurement;}
+function tablespoonToCup(measurement){return 0.0625 * measurement;}
+function tablespoonToTeaspoon(measurement){return 3 * measurement;}
+function teaspoonToTablespoon(measurement){return 0.333 * measurement;}
+function teaspoonToCup(measurement){return 0.0208333 * measurement;}
 let element = Array.prototype.slice.call(document.querySelectorAll("li"));
 for (let i  = 0; i < element.length; i++) {
     // console.log(element[i].textContent);  
@@ -34,8 +40,37 @@ function replace(ogText, ingredientDict, numandMetric){
     let replacementText = ""; 
     let num = numandMetric[0];
     let metric = numandMetric[1];
-
+    if(metric != ogMetric){
+        num = convertMetrics(metric, ogMetric);
+    }
     return replacementText;
+}
+function convertMetrics(metric, ogMetric){
+    if(metric == "Teaspoon"){
+        if(ogMetric == "Teaspoon"){
+            return "NULL";
+        }else if (ogMetric == "Tablespoon"){
+            return teaspoonToTablespoon(num);
+        }else if(ogMetric == "Cup") {
+            return teaspoonToCup(num);
+        }
+    }else if (metric == "Tablespoon"){
+        if(ogMetric == "Teaspoon"){
+            return tablespoonToTeaspoon(num);
+        }else if (ogMetric == "Tablespoon"){
+            return "NULL";
+        }else if(ogMetric == "Cup") {
+            return tablespoonToCup(num);
+        }
+    }else if(metric == "Cup") {
+        if(ogMetric == "Teaspoon"){
+            return cupToTeaspoon(num);
+        }else if (ogMetric == "Tablespoon"){
+            return cupToTablespoon(num);
+        }else if(ogMetric == "Cup") {
+            return "NULL";
+        }
+    }
 }
 
 function findNumandMetric(text){
@@ -98,17 +133,17 @@ function ingredientSearch(foodEl){
             if(foodArr[i] in cupToGrams){
                 ret["Item"] = foodArr[i];
                 ret["Multiple"] = cupToGrams[foodArr[i]];
-                ret["OG Metric"] = "Cups";
+                ret["OG Metric"] = "Cup";
                 found = true;
             } else if (foodArr[i] in tablespoonToGrams){
                 ret["Item"] = foodArr[i];
                 ret["Multiple"] = tablespoonToGrams[foodArr[i]];
-                ret["OG Metric"] = "Tbs";
+                ret["OG Metric"] = "Tablespoon";
                 found = true;
             } else if (foodArr[i] in teaspoonToGrams){  
                 ret["Item"] = foodArr[i];
                 ret["Multiple"] = teaspoonToGrams[foodArr[i]];
-                ret["OG Metric"] = "Tsp";
+                ret["OG Metric"] = "Teaspoon";
                 found = true;
             }
         }
