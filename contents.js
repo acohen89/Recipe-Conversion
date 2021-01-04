@@ -27,7 +27,7 @@ for (let i  = 0; i < element.length; i++) {
         // element[i].textContent = element[i].textContent.replace(ingredient["Item"], "REPLACED!");
         console.log(ingredient["Item"]);
         console.log(ogNumandMetric);
-        // element[i].textContent = replace(element[i].textContent, ingredient, ogNumandMetric);
+        element[i].textContent = replacement(element[i].textContent, ingredient, ogNumandMetric);
         // element[i].textContent = element[i].textContent.replace(ingredient["Item"].toLowerCase(), "REPLACED!"); // Replaces lowercase words  
        }
     }
@@ -39,14 +39,34 @@ for (let i  = 0; i < element.length; i++) {
 function replacement(ogText, ingredientDict, numandMetric){
     let ogTextArr = ogText.split(" ");
     let replacementText = ""; 
-    let num = numandMetric[0];
-    let metric = numandMetric[1];
-    if(metric != ogMetric){
-        num = convertMetrics(metric, ogMetric);
+    let ogMetric = numandMetric["Metric"];
+    let weight = "NULL";
+    let reqMetric = findReqMetric(ingredientDict["Item"]);
+    if(reqMetric != ogMetric){
+        num = convertMetrics(reqMetric, ogMetric, numandMetric["Num"]);
     }
+    if(reqMetric == "Cup"){
+        if(!(ingredientDict["Item"] in cupToGrams)){console.log("Error!");}
+        weight = numandMetric["Num"] * cupToGrams[ingredientDict["Item"]];
+    } else if(reqMetric == "Tablespoon") {
+        if(!(ingredientDict["Item"] in tablespoonToGrams)){console.log("Error!");}
+        weight = numandMetric["Num"] * tablespoonToGrams[ingredientDict["Item"]];
+    } else if (reqMetric == "Teaspoon"){
+        if(!(ingredientDict["Item"] in teaspoonToGrams)){console.log("Error!");}
+        weight = numandMetric["Num"] * teaspoonToGrams[ingredientDict["Item"]];
+    } else {console.log("Error: Req metric wrong");}
+    replacementText = ogText.replace(numandMetric["OGNum"], weight + "g");
+    let temp = "";
+    if(numandMetric["TwoNums"] == true){
+        if(numandMetric["TwoNums"] == "NULL") {console.log("Error: TwoNums = NUll");}
+        temp = replacementText.replace(numandMetric["SecondOGNum"], "");
+        replacementText = temp; 
+    }
+    // TODO: find metric in orginal format and replace it with that 
+    // replacmentText = replacementText.replace(numandMetric["Metric"], ""); // removes metric
     return replacementText;
 }
-function convertMetrics(metric, ogMetric){
+function convertMetrics(metric, ogMetric, num){
     if(metric == "Teaspoon"){
         if(ogMetric == "Teaspoon"){
             return "NULL";
@@ -100,15 +120,18 @@ function findNumandMetric(text){
                     if(textArr[i+1] in possibleNums){
                         secondNum = possibleNums[textArr[i+1]];
                         retDict["SecondOGNum"] = textArr[i+1];
+                        retDict["TwoNums"] = true;
                     } else if (i + 2 < textArr.length){
                         if(textArr[i+2] in possibleNums){
                             secondNum = possibleNums[textArr[i+2]];
                             retDict["SecondOGNum"] = textArr[i+2];
+                            retDict["TwoNums"] = true;
                         }
                     } else if(i + 3 < textArr.length){
                         if(textArr[i+3] in possibleNums){
                             secondNum = possibleNums[textArr[i+3]];
                             retDict["SecondOGNum"] = textArr[i+3];
+                            retDict["TwoNums"] = true;
                         }
                     }
                 }
@@ -161,6 +184,15 @@ function ingredientSearch(foodEl){
 }
 function secondarySearch(foodArr){
     return {"Item": "NULL", "Multiple": "NULL", "OG Metric": "NULL" };
+}
+function findReqMetric(item){
+    if(item in cupToGrams){ return "Cup";} 
+    else if(item in tablespoonToGrams){ return "Tablespoon";}
+    else if (item in teaspoonToGrams){return "Teaspoon";}
+    else{
+        console.log("Error occured when finding the req metric");
+        return "NULL";
+    }
 }
 function dictNotNull(dict){
     for (k in dict){
