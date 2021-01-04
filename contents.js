@@ -1,5 +1,5 @@
 console.log("Recipe Chrome Extension Loaded");
-let cupToGrams  = {"AP Flour": 130.0, "Bread Flour": 135.0, "WW Flour": 128.0, "Rye Flour": 102.0, "Water": 240.0, "Sugar": 200.0, "Raw Sugar": 250.0, "Brown Sugar": 220.0,
+let cupToGrams  = {"AP Flour": 130.0, "Bread Flour": 135.0, "Flour": 130.0, "WW Flour": 128.0, "Rye Flour": 102.0, "Water": 240.0, "Sugar": 200.0, "Raw Sugar": 250.0, "Brown Sugar": 220.0,
 "Confectioners Sugar": 125.0, "Milk": 242.0, "Cocoa Powder": 85.0, "Oil": 242.0, "Chocolate Chunks": 140.0, "Chocolate Chips": 170.0, "Nuts": 110.0, "Raisins": 155.0, "Oats": 105.0, "Heavy Cream": 225.0, "Buttermilk": 225.0, "Yogurt": 225.0, "Sour Cream": 225.0, "Peanut Butter": 250, "Rice": 200.0, "Light Corn Syrup": 328.0, "Dark Corn Syrup": 328.0, "Corn Syrup": 328.0
  }
 let metricDict = {"Tsp": "Teaspoon", "tsp": "Teaspoon", "TSP": "Teaspoon", "teaspoon": "Teaspoon", "Teaspoon": "Teaspoon", "TeaSpoon": "Teaspoon", "TSPs": "Teaspoon", "Tsps": "Teaspoon", "Teaspoons": "Teaspoon", "teaspoons": "Teaspoon", "Teaspoons": "Teaspoon",
@@ -16,13 +16,14 @@ function tablespoonToTeaspoon(measurement){return 3 * measurement;}
 function teaspoonToTablespoon(measurement){return 0.333 * measurement;}
 function teaspoonToCup(measurement){return 0.0208333 * measurement;}
 let element = Array.prototype.slice.call(document.querySelectorAll("li"));
+
 for (let i  = 0; i < element.length; i++) {
     // console.log(element[i].textContent);  
     let ingredient = ingredientSearch(element[i].textContent);
     if(dictNotNull(ingredient)) {
        // console.log(element[i].textContent);  
        let ogNumandMetric = findNumandMetric(element[i].textContent); 
-       if(ogNumandMetric[0] != "NULL" && ogNumandMetric[1] != "NULL"){
+       if(ogNumandMetric["Num"] != "NULL" && ogNumandMetric["Metric"] != "NULL"){
         // element[i].textContent = element[i].textContent.replace(ingredient["Item"], "REPLACED!");
         console.log(ingredient["Item"]);
         console.log(ogNumandMetric);
@@ -35,7 +36,7 @@ for (let i  = 0; i < element.length; i++) {
     // console.log(tempArr);
 }
 
-function replace(ogText, ingredientDict, numandMetric){
+function replacement(ogText, ingredientDict, numandMetric){
     let ogTextArr = ogText.split(" ");
     let replacementText = ""; 
     let num = numandMetric[0];
@@ -75,44 +76,48 @@ function convertMetrics(metric, ogMetric){
 
 function findNumandMetric(text){
     let textArr = text.split(" ");
-    let retArr = ["NULL", "NULL"];
+    let retDict = {"Num": "NULL", "Metric": "NULL", "TwoNums": "NULL", "OGNum": "NULL", "SecondOGNum": "NULL"}
     let foundMetric = false;
     let foundNum = false;
     let go = true;
     for(let i = 0; i < textArr.length; i++){
         if(!foundMetric && textArr[i] in metricDict) {
             // searches for either cups, tablespoons, or teaspoons
-            retArr[1] = metricDict[textArr[i]];
+            retDict["Metric"] = metricDict[textArr[i]];
             foundMetric = true;
         } else if(!foundNum){
             if(textArr[i] in possibleNums){
-                retArr[0] = possibleNums[textArr[i]];
+                retDict["Num"] = possibleNums[textArr[i]];
+                retDict["OGNum"] = textArr[i];
+                retDict["TwoNums"] = false;
                 go = false;
                 foundNum = true;
             } else if(go && parseInt(textArr[i], 10) <= 32){
                 let firstNum = parseInt(textArr[i], 10); 
                 let secondNum = 0.0;
+                retDict["OGNum"] = textArr[i];
                 if(i + 1 < textArr.length){
                     if(textArr[i+1] in possibleNums){
                         secondNum = possibleNums[textArr[i+1]];
+                        retDict["SecondOGNum"] = textArr[i+1];
                     } else if (i + 2 < textArr.length){
                         if(textArr[i+2] in possibleNums){
                             secondNum = possibleNums[textArr[i+2]];
+                            retDict["SecondOGNum"] = textArr[i+2];
                         }
                     } else if(i + 3 < textArr.length){
                         if(textArr[i+3] in possibleNums){
                             secondNum = possibleNums[textArr[i+3]];
+                            retDict["SecondOGNum"] = textArr[i+3];
                         }
                     }
                 }
-                retArr[0] = firstNum + secondNum;
+                retDict["Num"] = firstNum + secondNum;
                 foundNum = true;
             }
-        } if (!go && parseInt(textArr[i], 10) <= 32){
-            
         }
     }
-    return retArr;
+    return retDict;
 }
 
 function ingredientSearch(foodEl){
