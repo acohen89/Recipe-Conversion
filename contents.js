@@ -56,15 +56,14 @@ function replacement(ogText, ingredientDict, numandMetric){
         weight = numandMetric["Num"] * teaspoonToGrams[ingredientDict["Item"]];
     } else {console.log("Error: Req metric wrong");}
     replacementText = ogText.replace(numandMetric["OGNum"], weight + "g");
-    let temp = "";
     if(numandMetric["TwoNums"] == true){
         if(numandMetric["TwoNums"] == "NULL") {console.log("Error: TwoNums = NUll");}
-        temp = replacementText.replace(numandMetric["SecondOGNum"], "");
+        let temp = replacementText.replace(numandMetric["SecondOGNum"], "");
         replacementText = temp; 
     }
     // TODO: find metric in orginal format and replace it with that 
-    // replacmentText = replacementText.replace(numandMetric["Metric"], ""); // removes metric
-    return replacementText;
+    // removes metric
+    return replacementText.replace(numandMetric["ogFormatMetric"], "");
 }
 function convertMetrics(metric, ogMetric, num){
     if(metric == "Teaspoon"){
@@ -96,13 +95,14 @@ function convertMetrics(metric, ogMetric, num){
 
 function findNumandMetric(text){
     let textArr = text.split(" ");
-    let retDict = {"Num": "NULL", "Metric": "NULL", "TwoNums": "NULL", "OGNum": "NULL", "SecondOGNum": "NULL"}
+    let retDict = {"Num": "NULL", "Metric": "NULL", "TwoNums": "NULL", "OGNum": "NULL", "SecondOGNum": "NULL", "ogFormatMetric": "NULL"}
     let foundMetric = false;
     let foundNum = false;
     let go = true;
     for(let i = 0; i < textArr.length; i++){
         if(!foundMetric && textArr[i] in metricDict) {
             // searches for either cups, tablespoons, or teaspoons
+            retDict["ogFormatMetric"] = textArr[i];
             retDict["Metric"] = metricDict[textArr[i]];
             foundMetric = true;
         } else if(!foundNum){
