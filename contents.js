@@ -49,7 +49,8 @@ function replacement(ogText, ingredientDict, numandMetric){
         if(!(ingredientDict["Item"] in teaspoonToGrams)){console.log("Error!");}
         weight = numandMetric["Num"] * teaspoonToGrams[ingredientDict["Item"]];
     } else {console.log("Error: Req metric wrong");}
-    replacementText = ogText.replace(numandMetric["OGNum"], round(weight, 1) + "g");
+    if(weight >= 5){replacementText = ogText.replace(numandMetric["OGNum"], Math.round(weight) + "g");}
+    else{replacementText = ogText.replace(numandMetric["OGNum"], round(weight, 1) + "g");}
     if(numandMetric["TwoNums"] == true){
         if(numandMetric["TwoNums"] == "NULL") {console.log("Error: TwoNums = NUll");}
         let temp = replacementText.replace(numandMetric["SecondOGNum"], "");
