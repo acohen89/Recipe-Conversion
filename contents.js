@@ -2,15 +2,14 @@ console.log("Recipe Chrome Extension Loaded");
 let cupToGrams = {
     "AP Flour": 130.0, "Bread Flour": 135.0, "Flour": 130.0, "WW Flour": 128.0, "Rye Flour": 102.0, "Water": 240.0, "Sugar": 200.0, "Raw Sugar": 250.0, "Brown Sugar": 220.0,
     "Confectioners Sugar": 125.0, "Milk": 242.0, "Cocoa Powder": 85.0, "Oil": 242.0, "Chocolate Chunks": 140.0, "Chocolate Chips": 170.0, "Nuts": 110.0, "Raisins": 155.0, "Oats": 105.0, "Heavy Cream": 225.0, "Buttermilk": 225.0, "Yogurt": 225.0, "Sour Cream": 225.0, "Peanut Butter": 250, "Rice": 200.0, "Light Corn Syrup": 328.0, "Dark Corn Syrup": 328.0, "Corn Syrup": 328.0,
-    "Broth": 235.0, "Stock": 235.0
+    "Broth": 235.0, "Stock": 235.0, "Balsamic Vinegar": 255.0
 }
 let metricDict = {
     "Tsp": "Teaspoon", "tsp": "Teaspoon", "TSP": "Teaspoon", "teaspoon": "Teaspoon", "Teaspoon": "Teaspoon", "TeaSpoon": "Teaspoon", "TSPs": "Teaspoon", "Tsps": "Teaspoon", "Teaspoons": "Teaspoon", "teaspoons": "Teaspoon", "Teaspoons": "Teaspoon",
     "Tbs": "Tablespoon", "tbs": "Tablespoon", "TBSP": "Tablespoon", "Tbsp": "Tablespoon", "TBS": "Tablespoon", "tablespoon": "Tablespoon", "Tablespoon": "Tablespoon", "TableSpoon": "Tablespoon", "TBSs": "Tablespoon", "Tbss": "Tablespoon", "Tablespoon": "Tablespoon", "tablespoons": "Tablespoon", "Tablespoons": "Tablespoon",
-
     "Cups": "Cup", "cups": "Cup", "Cup": "Cup", "cup": "Cup", "CUPS": "Cup", "CUP": "Cup", "c": "Cup", "C": "Cup", "cs": "Cup", "Cs": "Cup", "CS": "Cup"
 }
-let possibleNums = { "1/2": 0.5, "1/3": 0.333, "1/4": 0.25, "1/8": 0.125, "2/3": 0.666, "3/4": 0.75, "3/8": 0.375, "5/8": 0.625, "7/8": 0.875 }
+let possibleNums = { "1/2": 0.5, "1/3": 0.333, "1/4": 0.25, "1/8": 0.125, "2/3": 0.666, "3/4": 0.75, "3/8": 0.375, "5/8": 0.625, "7/8": 0.875, "⅛": 0.125, "¼": 0.25, "⅓": 0.333, "⅜": 0.375, "½": 0.5, "⅔": 0.666,  "¾": 0.75 }
 let teaspoonToGrams = { "Salt": 5.0, "Yeast": 3.1, "Cinnamon": 2.64, "Baking Powder": 4.0, "Vanilla": 4.0, "extract": 4.0 }
 let tablespoonToGrams = { "Butter": 14.1, "Honey": 21.25, "Cornstarch": 9.375, "Maple Syrup": 20.0 }
 function cupToTeaspoon(measurement) { return 0.0208333 * measurement; }
@@ -24,21 +23,31 @@ let element = Array.prototype.slice.call(document.querySelectorAll("li"));
 for (let i = 0; i < element.length; i++) {
     let ingredient = ingredientSearch(element[i].textContent);
     if (dictNotNull(ingredient)) {
-        let ogNumandMetric = findNumandMetric(element[i].textContent);
+        let ogNumandMetric = findNumandMetric(element[i].textContent, ingredient);
         if (ogNumandMetric["Num"] != "NULL" && ogNumandMetric["Metric"] != "NULL") {
-            // console.log(ingredient["Item"]);
-            //  console.log(ogNumandMetric);
+            console.log(ingredient["Item"]);
+            console.log(ogNumandMetric);
             let replaced = false;
+            if(element[i].childNodes.length >= 1){
+                 if(element[i].childNodes[1].className == "checkbox-list"){
+                     let split = element[i].querySelectorAll("span");
+                     if(split.length >= 1){
+                         split[1].textContent = replacement(split[1].textContent, ingredient, ogNumandMetric);
+                         replaced = true;
+                     } else {
+                         console.log("Error: trying to replace checkboxes")
+                     }
+                 }
+             }
             for (let j = 0; j < element[i].childNodes.length; j++) {
-                console.log(element[i].childNodes[j].textContent + "J val: " + j)
                 if (element[i].childNodes[j].textContent == "▢ ") {
-                    if(j + 1 < element[i].childNodes.length){
-                        element[i].childNodes[j+1].textContent = replacement(element[i].textContent, ingredient, ogNumandMetric).replace("▢ ", "");
+                    if (j + 1 < element[i].childNodes.length) {
+                        element[i].childNodes[j + 1].textContent = replacement(element[i].textContent, ingredient, ogNumandMetric).replace("▢ ", "");
                     }
                     replaced = true;
                 }
             }
-            if (!replaced) {
+            if(!replaced){
                 element[i].textContent = replacement(element[i].textContent, ingredient, ogNumandMetric);
             }
         }
@@ -102,7 +111,7 @@ function convertMetrics(metric, ogMetric, num) {
     }
 }
 
-function findNumandMetric(text) {
+function findNumandMetric(text, ingredient) {
     let textArr = text.split(" ");
     let retDict = { "Num": "NULL", "Metric": "NULL", "TwoNums": "NULL", "OGNum": "NULL", "SecondOGNum": "NULL", "ogFormatMetric": "NULL" }
     let foundMetric = false;
@@ -171,8 +180,8 @@ function ingredientSearch(foodEl) {
     for (let i = 0; i < foodArr.length; i++) {
         if (typeof (foodArr[i] != "int")) {
             let nextWordAvai = false;
+            let tryDif = foodArr[i].replace(",", "").replace(" ", "");
             if (i + 1 < foodArr.length) { nextWordAvai = true; }
-
             if (foodArr[i] in cupToGrams) {
                 ret["Item"] = foodArr[i];
                 ret["Multiple"] = cupToGrams[foodArr[i]];
@@ -188,7 +197,23 @@ function ingredientSearch(foodEl) {
                 ret["Multiple"] = teaspoonToGrams[foodArr[i]];
                 ret["OG Metric"] = "Teaspoon";
                 found = true;
-            } else if (i + 1 < foodArr.length) {
+            } else if (tryDif in tablespoonToGrams) {
+                ret["Item"] = tryDif;
+                ret["Multiple"] = tablespoonToGrams[tryDif];
+                ret["OG Metric"] = "Tablespoon";
+                found = true;
+            } else if (tryDif in cupToGrams) {
+                ret["Item"] = tryDif;
+                ret["Multiple"] = cupToGrams[tryDif];
+                ret["OG Metric"] = "Cup";
+                found = true;
+            } else if (tryDif in teaspoonToGrams) {
+                ret["Item"] = tryDif;
+                ret["Multiple"] = teaspoonToGrams[tryDif];
+                ret["OG Metric"] = "Teaspoon";
+                found = true;
+            }
+            else if (i + 1 < foodArr.length) {
                 let twoWordTest = foodArr[i] + " " + foodArr[i + 1];
                 if (twoWordTest in cupToGrams) {
                     ret["Item"] = twoWordTest;
@@ -246,3 +271,5 @@ function dictNotNull(dict) {
 // add case where it's half a cup plus a third of a cup
 // add all-purpose flour case 
 // add mini chocolate chips
+// add if it has a period or astrix after item
+// add cormeal and half-and-half
