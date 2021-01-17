@@ -9,7 +9,7 @@ let metricDict = {
     "Tbs": "Tablespoon", "tbs": "Tablespoon", "TBSP": "Tablespoon", "Tbsp": "Tablespoon", "TBS": "Tablespoon", "tablespoon": "Tablespoon", "Tablespoon": "Tablespoon", "TableSpoon": "Tablespoon", "TBSs": "Tablespoon", "Tbss": "Tablespoon", "Tablespoon": "Tablespoon", "tablespoons": "Tablespoon", "Tablespoons": "Tablespoon",
     "Cups": "Cup", "cups": "Cup", "Cup": "Cup", "cup": "Cup", "CUPS": "Cup", "CUP": "Cup", "c": "Cup", "C": "Cup", "cs": "Cup", "Cs": "Cup", "CS": "Cup"
 }
-let possibleNums = { "1/2": 0.5, "1/3": 0.333, "1/4": 0.25, "1/8": 0.125, "2/3": 0.666, "3/4": 0.75, "3/8": 0.375, "5/8": 0.625, "7/8": 0.875, "⅛": 0.125, "¼": 0.25, "⅓": 0.333, "⅜": 0.375, "½": 0.5, "⅔": 0.666,  "¾": 0.75 }
+let possibleNums = { "1/2": 0.5, "1/3": 0.333, "1/4": 0.25, "1/8": 0.125, "2/3": 0.666, "3/4": 0.75, "3/8": 0.375, "5/8": 0.625, "7/8": 0.875, "⅛": 0.125, "¼": 0.25, "⅓": 0.333, "⅜": 0.375, "½": 0.5, "⅔": 0.666, "¾": 0.75 }
 let teaspoonToGrams = { "Salt": 5.0, "Yeast": 3.1, "Cinnamon": 2.64, "Baking Powder": 4.0, "Vanilla": 4.0, "extract": 4.0 }
 let tablespoonToGrams = { "Butter": 14.1, "Honey": 21.25, "Cornstarch": 9.375, "Maple Syrup": 20.0 }
 function cupToTeaspoon(measurement) { return 0.0208333 * measurement; }
@@ -21,37 +21,40 @@ function teaspoonToCup(measurement) { return 48 * measurement; }
 let element = Array.prototype.slice.call(document.querySelectorAll("li"));
 
 for (let i = 0; i < element.length; i++) {
-    let ingredient = ingredientSearch(element[i].textContent);
-    if (dictNotNull(ingredient)) {
-        let ogNumandMetric = findNumandMetric(element[i].textContent, ingredient);
-        if (ogNumandMetric["Num"] != "NULL" && ogNumandMetric["Metric"] != "NULL") {
-            console.log(ingredient["Item"]);
-            console.log(ogNumandMetric);
-            let replaced = false;
-            if(element[i].childNodes.length >= 1){
-                 if(element[i].childNodes[1].className == "checkbox-list"){
-                     let split = element[i].querySelectorAll("span");
-                     if(split.length >= 1){
-                         split[1].textContent = replacement(split[1].textContent, ingredient, ogNumandMetric);
-                         replaced = true;
-                     } else {
-                         console.log("Error: trying to replace checkboxes")
-                     }
-                 }
-             }
-            for (let j = 0; j < element[i].childNodes.length; j++) {
-                if (element[i].childNodes[j].textContent == "▢ ") {
-                    if (j + 1 < element[i].childNodes.length) {
-                        element[i].childNodes[j + 1].textContent = replacement(element[i].textContent, ingredient, ogNumandMetric).replace("▢ ", "");
+    if (true) { // put containsGramsOrNum(element[i].textContent
+        let ingredient = ingredientSearch(element[i].textContent);
+        if (dictNotNull(ingredient)) {
+            let ogNumandMetric = findNumandMetric(element[i].textContent, ingredient);
+            if (ogNumandMetric["Num"] != "NULL" && ogNumandMetric["Metric"] != "NULL") {
+                console.log(ingredient["Item"]);
+                console.log(ogNumandMetric);
+                let replaced = false;
+                if (element[i].childNodes.length >= 2) {
+                    if (element[i].childNodes[1].className == "checkbox-list") {
+                        let split = element[i].querySelectorAll("span");
+                        if (split.length >= 1) {
+                            split[1].textContent = replacement(split[1].textContent, ingredient, ogNumandMetric);
+                            replaced = true;
+                        } else {
+                            console.log("Error: trying to replace checkboxes")
+                        }
                     }
-                    replaced = true;
                 }
-            }
-            if(!replaced){
-                element[i].textContent = replacement(element[i].textContent, ingredient, ogNumandMetric);
+                for (let j = 0; j < element[i].childNodes.length; j++) {
+                    if (element[i].childNodes[j].textContent == "▢ ") {
+                        if (j + 1 < element[i].childNodes.length) {
+                            element[i].childNodes[j + 1].textContent = replacement(element[i].textContent, ingredient, ogNumandMetric).replace("▢ ", "");
+                        }
+                        replaced = true;
+                    }
+                }
+                if (!replaced) {
+                    element[i].textContent = replacement(element[i].textContent, ingredient, ogNumandMetric);
+                }
             }
         }
     }
+
 }
 
 function replacement(ogText, ingredientDict, numandMetric) {
@@ -259,6 +262,22 @@ function dictNotNull(dict) {
         }
     }
     return true;
+}
+function containsGramsOrNum(text) {
+    let textArr = text.split(" ");
+    let isInt = true; 
+
+    for (let i = 0; i < textArr.length; i++) {
+        // if(isNumber(textArr[i])){isInt = false;}
+        if (textArr[i] == "g" || textArr[i] == "G" || textArr[i] == "grams" || textArr[i] == "Grams") {
+            return true;
+        }
+            // add to test if it's a number here (isNumber(textArr[i][0])
+        else if(textArr[i][textArr.length] == "g" || textArr[i][textArr.length] == "G") {
+            return true;
+        } 
+    }
+    return isInt;
 }
 
 // first do if there is no number in the line, skip it
