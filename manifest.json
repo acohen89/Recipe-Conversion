@@ -1,7 +1,12 @@
 {
-    "name": "Recipe Conversion",
+    "name": "Volume To Wieght Recipe Conversion",
     "version": "1.0",
     "manifest_version": 2,
+    "icons": { 
+        "16": "./logo.jpeg",
+        "48": "./logo.jpeg",
+       "128": "./logo.jpeg" 
+    },
     "content_scripts": [
         {
             "matches": ["<all_urls>"],
