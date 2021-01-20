@@ -2,7 +2,7 @@ console.log("Recipe Chrome Extension Loaded");
 let cupToGrams = {
     "AP Flour": 130.0, "Bread Flour": 135.0, "Flour": 130.0, "WW Flour": 128.0, "Rye Flour": 102.0, "Water": 240.0, "Sugar": 200.0, "Raw Sugar": 250.0, "Brown Sugar": 220.0,
     "Confectioners Sugar": 125.0, "Milk": 242.0, "Cocoa Powder": 85.0, "Oil": 242.0, "Chocolate Chunks": 140.0, "Chocolate Chips": 170.0, "Nuts": 110.0, "Raisins": 155.0, "Oats": 105.0, "Heavy Cream": 225.0, "Buttermilk": 225.0, "Yogurt": 225.0, "Sour Cream": 225.0, "Peanut Butter": 250, "Rice": 200.0, "Light Corn Syrup": 328.0, "Dark Corn Syrup": 328.0, "Corn Syrup": 328.0,
-    "Broth": 235.0, "Stock": 235.0, "Balsamic Vinegar": 255.0, "Whipping Cream": 231.0
+    "Broth": 235.0, "Stock": 235.0, "Balsamic Vinegar": 255.0, "Whipping Cream": 231.0, "Half-and-half": 242.0
 }
 let metricDict = {
     "Tsp": "Teaspoon", "tsp": "Teaspoon", "TSP": "Teaspoon", "teaspoon": "Teaspoon", "Teaspoon": "Teaspoon", "TeaSpoon": "Teaspoon", "TSPs": "Teaspoon", "Tsps": "Teaspoon", "Teaspoons": "Teaspoon", "teaspoons": "Teaspoon", "Teaspoons": "Teaspoon",
@@ -21,7 +21,7 @@ function teaspoonToCup(measurement) { return 48 * measurement; }
 let element = Array.prototype.slice.call(document.querySelectorAll("li"));
 
 for (let i = 0; i < element.length; i++) {
-    if (!containsGramsOrNum(element[i].textContent)) { // put !containsGramsOrNum(element[i].textContent
+    if (!containsGramsOrNum(element[i].textContent)) {
         let ingredient = ingredientSearch(element[i].textContent);
         if (dictNotNull(ingredient)) {
             let ogNumandMetric = findNumandMetric(element[i].textContent, ingredient);
@@ -41,15 +41,13 @@ for (let i = 0; i < element.length; i++) {
                     }
                 }
                 for (let j = 0; j < element[i].childNodes.length; j++) {
-                    // for tomorrow:
-                    // loop through all elements of the child node and add them to a string
-                    // with that string, do normal replacement method
-                    // then, using a loop, add each part of the string back the orginal place in child node
                     if (element[i].childNodes[j].textContent == "▢ ") {
                         if (j + 1 < element[i].childNodes.length) {
                             let copyText = copyOfText(element[i].childNodes);
-                            let replacemenText = replacement(copyText, ingredient, ogNumandMetric).replace(/\s+/g, ' ').trim();
-                            element[i].childNodes = textToNodes(replacemenText, element[i].childNodes);
+                            let replacementText = replacement(copyText, ingredient, ogNumandMetric).replace(/\s+/g, ' ').trim();
+                            element[i].childNodes = textToNodes(replacementText, element[i].childNodes);
+
+
                         }
                         replaced = true;
                     }
@@ -62,23 +60,22 @@ for (let i = 0; i < element.length; i++) {
     }
 
 }
-function textToNodes(text, childElements){
+function textToNodes(text, childElements) {
     let textArr = text.split(" ");
     let k = 1;
-    for(let i = 1; i < childElements.length; i++){
-        childElements[i].textContent = textArr[k];
-        if(i + 1 < childElements.length){
-            i++;
-            childElements[i].textContent = " ";
-        }
-        k++;
+    let i = 1
+    for (i; i < textArr.length; i++, k++) {
+        childElements[k].textContent = textArr[i] + " ";
+    }
+    for (k; k < childElements.length; k++) {
+
+        childElements[k].textContent = "";
     }
     return childElements;
 }
-function copyOfText(childElements){
-    // let copyArr = new Array(childElements.length-1);
+function copyOfText(childElements) {
     let retStr = "";
-    for(let k = 0; k < childElements.length; k++){
+    for (let k = 0; k < childElements.length; k++) {
         retStr += childElements[k].textContent;
     }
     return retStr;
@@ -189,12 +186,9 @@ function findNumandMetric(text, ingredient) {
     }
     return retDict;
 }
-function round(value, decimals) {
-    return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
-}
 
 function ingredientSearch(foodEl) {
-    let ret = { "Item": "NULL", "Multiple": "NULL", "OG Metric": "NULL"}
+    let ret = { "Item": "NULL", "Multiple": "NULL", "OG Metric": "NULL" }
     let found = false;
     let foodArr = foodEl.split(" ");
     for (let i = 0; i < foodArr.length; i++) {
@@ -279,13 +273,15 @@ function findReqMetric(item) {
         return "NULL";
     }
 }
-function dictNotNull(dict) {
-    for (k in dict) {
-        if (dict[k] == "NULL") {
-            return false;
-        }
+function removeMetricAndIngredient(metric, ingredient, text) {
+    text = text.replace(metric, "").replace(ingredient, "");
+    let ingredientArr = ingredient.split("");
+    if (typeof (ingredientArr[0]) == "string" && ingredientArr.length >= 0) {
+        ingredientArr[0] = ingredientArr[0].toLowerCase();
     }
-    return true;
+    let newIngredient = ingredientArr.join("");
+    return text.replace(newIngredient, "");
+
 }
 function containsGramsOrNum(text) {
     let textArr = text.split(" ");
@@ -297,7 +293,7 @@ function containsGramsOrNum(text) {
                     k++;
                 }
                 let testSubString = textArr[i].substring(k, textArr[i].length);
-                if(testSubString.includes("g") || testSubString.includes("grams") || testSubString.includes("Grams") || testSubString.includes("gr") || testSubString.includes("ml") || testSubString.includes("ML") || testSubString.includes("Ml") || testSubString.includes("milliliters") || testSubString.includes("Milliliters")){
+                if (testSubString.includes("g") || testSubString.includes("grams") || testSubString.includes("Grams") || testSubString.includes("gr") || testSubString.includes("ml") || testSubString.includes("ML") || testSubString.includes("Ml") || testSubString.includes("milliliters") || testSubString.includes("Milliliters")) {
                     return true;
                 }
             }
@@ -312,25 +308,27 @@ function isInt(char) {
     }
     return true;
 }
-function removeMetricAndIngredient(metric, ingredient, text){
-    text = text.replace(metric, "").replace(ingredient, "");
-    let ingredientArr = ingredient.split("");
-    if (typeof (ingredientArr[0]) == "string" && ingredientArr.length >= 0) {
-        ingredientArr[0] = ingredientArr[0].toLowerCase();
-    }
-    let newIngredient = ingredientArr.join("");
-    return text.replace(newIngredient, "");
 
+function dictNotNull(dict) {
+    for (k in dict) {
+        if (dict[k] == "NULL") {
+            return false;
+        }
+    }
+    return true;
+}
+
+function round(value, decimals) {
+    return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
 }
 
 
-// add extracts and vanilla 
+
 // add vegetable stocks and broths 
 // eventually add items like vegetables 
 // add liters and gallons eventually? 
 // add case wher it is like "2 cups plus 1 tablespoon" or "2 cups and a 1/4 of a cup"
 // add case where it's half a cup plus a third of a cup
-// add all-purpose flour case 
 // add mini chocolate chips
 // add if it has a period or astrix after item
 // add cormeal and half-and-half
