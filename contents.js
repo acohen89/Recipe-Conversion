@@ -1,4 +1,5 @@
 console.log("Recipe Chrome Extension Loaded");
+ 
 let cupToGrams = {
     "AP Flour": 130.0, "Bread Flour": 135.0, "Flour": 130.0, "WW Flour": 128.0, "Rye Flour": 102.0, "Water": 240.0, "Sugar": 200.0, "Raw Sugar": 250.0, "Brown Sugar": 220.0,
     "Confectioners Sugar": 125.0, "Milk": 242.0, "Cocoa Powder": 85.0, "Oil": 242.0, "Chocolate Chunks": 140.0, "Chocolate Chips": 170.0, "Nuts": 110.0, "Raisins": 155.0, "Oats": 105.0, "Heavy Cream": 225.0, "Buttermilk": 225.0, "Yogurt": 225.0, "Sour Cream": 225.0, "Peanut Butter": 250, "Rice": 200.0, "Light Corn Syrup": 328.0, "Dark Corn Syrup": 328.0, "Corn Syrup": 328.0,
@@ -12,12 +13,6 @@ let metricDict = {
 let possibleNums = { "1/2": 0.5, "1/3": 0.333, "1/4": 0.25, "1/8": 0.125, "2/3": 0.666, "3/4": 0.75, "3/8": 0.375, "5/8": 0.625, "7/8": 0.875, "⅛": 0.125, "¼": 0.25, "⅓": 0.333, "⅜": 0.375, "½": 0.5, "⅔": 0.666, "¾": 0.75 }
 let teaspoonToGrams = { "Salt": 5.0, "Yeast": 3.1, "Cinnamon": 2.64, "Baking Powder": 4.0, "Vanilla": 4.0, "extract": 4.0 }
 let tablespoonToGrams = { "Butter": 14.1, "Honey": 21.25, "Cornstarch": 9.375, "Maple Syrup": 20.0 }
-function cupToTeaspoon(measurement) { return 0.0208333 * measurement; }
-function cupToTablespoon(measurement) { return 0.0625 * measurement; }
-function tablespoonToCup(measurement) { return 16 * measurement; }
-function tablespoonToTeaspoon(measurement) { return 0.333 * measurement; }
-function teaspoonToTablespoon(measurement) { return 3 * measurement; }
-function teaspoonToCup(measurement) { return 48 * measurement; }
 let element = Array.prototype.slice.call(document.querySelectorAll("li"));
 
 for (let i = 0; i < element.length; i++) {
@@ -26,7 +21,7 @@ for (let i = 0; i < element.length; i++) {
         if (dictNotNull(ingredient)) {
             let ogNumandMetric = findNumandMetric(element[i].textContent, ingredient);
             if (ogNumandMetric["Num"] != "NULL" && ogNumandMetric["Metric"] != "NULL") {
-                //console.log(ingredient["Item"]);
+               // console.log(ingredient["Item"]);
                 //console.log(ogNumandMetric);
                 let replaced = false;
                 if (element[i].childNodes.length >= 2) {
@@ -199,70 +194,84 @@ function ingredientSearch(foodEl) {
         foodArr[i] = strArr.join("");
     }
     for (let i = 0; i < foodArr.length; i++) {
-        if (typeof (foodArr[i] != "int")) { // change to number?
-            let nextWordAvai = false;
-            let tryDif = foodArr[i].replace(",", "").replace(" ", "");
-            if (i + 1 < foodArr.length) { nextWordAvai = true; }
-            if (foodArr[i] in cupToGrams) {
-                ret["Item"] = foodArr[i];
-                ret["Multiple"] = cupToGrams[foodArr[i]];
+        let tryDif = foodArr[i].replace(",", "").replace(" ", "");
+        let tryDifTwo = foodArr[i].replace(/\s+/g, ' ').trim();
+        if (foodArr[i] in cupToGrams) {
+            ret["Item"] = foodArr[i];
+            ret["Multiple"] = cupToGrams[foodArr[i]];
+            ret["OG Metric"] = "Cup";
+            found = true;
+        } else if (foodArr[i] in tablespoonToGrams) {
+            ret["Item"] = foodArr[i];
+            ret["Multiple"] = tablespoonToGrams[foodArr[i]];
+            ret["OG Metric"] = "Tablespoon";
+            found = true;
+        } else if (foodArr[i] in teaspoonToGrams) {
+            ret["Item"] = foodArr[i];
+            ret["Multiple"] = teaspoonToGrams[foodArr[i]];
+            ret["OG Metric"] = "Teaspoon";
+            found = true;
+        } else if (tryDif in tablespoonToGrams) {
+            ret["Item"] = tryDif;
+            ret["Multiple"] = tablespoonToGrams[tryDif];
+            ret["OG Metric"] = "Tablespoon";
+            found = true;
+        } else if (tryDif in cupToGrams) {
+            ret["Item"] = tryDif;
+            ret["Multiple"] = cupToGrams[tryDif];
+            ret["OG Metric"] = "Cup";
+            found = true;
+        } else if (tryDif in teaspoonToGrams) {
+            ret["Item"] = tryDif;
+            ret["Multiple"] = teaspoonToGrams[tryDif];
+            ret["OG Metric"] = "Teaspoon";
+            found = true;
+        } else if (tryDifTwo in tablespoonToGrams) {
+            ret["Item"] = tryDifTwo;
+            ret["Multiple"] = tablespoonToGrams[tryDifTwo];
+            ret["OG Metric"] = "Tablespoon";
+            found = true;
+        } else if (tryDifTwo in cupToGrams) {
+            ret["Item"] = tryDifTwo;
+            ret["Multiple"] = cupToGrams[tryDifTwo];
+            ret["OG Metric"] = "Cup";
+            found = true;
+        } else if (tryDifTwo in teaspoonToGrams) {
+            ret["Item"] = tryDifTwo;
+            ret["Multiple"] = teaspoonToGrams[tryDifTwo];
+            ret["OG Metric"] = "Teaspoon";
+            found = true;
+        }
+        else if (i + 1 < foodArr.length) {
+            let twoWordTest = foodArr[i] + " " + foodArr[i + 1];
+            if (twoWordTest in cupToGrams) {
+                ret["Item"] = twoWordTest;
+                ret["Multiple"] = cupToGrams[twoWordTest];
                 ret["OG Metric"] = "Cup";
                 found = true;
-            } else if (foodArr[i] in tablespoonToGrams) {
-                ret["Item"] = foodArr[i];
-                ret["Multiple"] = tablespoonToGrams[foodArr[i]];
+            } else if (twoWordTest in tablespoonToGrams) {
+                ret["Item"] = twoWordTest;
+                ret["Multiple"] = tablespoonToGrams[twoWordTest];
                 ret["OG Metric"] = "Tablespoon";
                 found = true;
-            } else if (foodArr[i] in teaspoonToGrams) {
-                ret["Item"] = foodArr[i];
-                ret["Multiple"] = teaspoonToGrams[foodArr[i]];
+            } else if (twoWordTest in teaspoonToGrams) {
+                ret["Item"] = twoWordTest;
+                ret["Multiple"] = teaspoonToGrams[twoWordTest];
                 ret["OG Metric"] = "Teaspoon";
                 found = true;
-            } else if (tryDif in tablespoonToGrams) {
-                ret["Item"] = tryDif;
-                ret["Multiple"] = tablespoonToGrams[tryDif];
-                ret["OG Metric"] = "Tablespoon";
-                found = true;
-            } else if (tryDif in cupToGrams) {
-                ret["Item"] = tryDif;
-                ret["Multiple"] = cupToGrams[tryDif];
-                ret["OG Metric"] = "Cup";
-                found = true;
-            } else if (tryDif in teaspoonToGrams) {
-                ret["Item"] = tryDif;
-                ret["Multiple"] = teaspoonToGrams[tryDif];
-                ret["OG Metric"] = "Teaspoon";
-                found = true;
-            }
-            else if (i + 1 < foodArr.length) {
-                let twoWordTest = foodArr[i] + " " + foodArr[i + 1];
-                if (twoWordTest in cupToGrams) {
-                    ret["Item"] = twoWordTest;
-                    ret["Multiple"] = cupToGrams[twoWordTest];
-                    ret["OG Metric"] = "Cup";
-                    found = true;
-                } else if (twoWordTest in tablespoonToGrams) {
-                    ret["Item"] = twoWordTest;
-                    ret["Multiple"] = tablespoonToGrams[twoWordTest];
-                    ret["OG Metric"] = "Tablespoon";
-                    found = true;
-                } else if (twoWordTest in teaspoonToGrams) {
-                    ret["Item"] = twoWordTest;
-                    ret["Multiple"] = teaspoonToGrams[twoWordTest];
-                    ret["OG Metric"] = "Teaspoon";
-                    found = true;
-                }
             }
         }
     }
-    if (!found) {
+   /* if (!found) {
         ret = secondarySearch(foodArr);
-    }
+    }*/
     return ret;
 
 }
 function secondarySearch(foodArr) {
-    return { "Item": "NULL", "Multiple": "NULL", "OG Metric": "NULL" };
+    let ret = { "Item": "NULL", "Multiple": "NULL", "OG Metric": "NULL" };
+    
+    return ret;
 }
 function findReqMetric(item) {
     if (item in cupToGrams) { return "Cup"; }
@@ -322,7 +331,12 @@ function round(value, decimals) {
     return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
 }
 
-
+function cupToTeaspoon(measurement) { return 0.0208333 * measurement; }
+function cupToTablespoon(measurement) { return 0.0625 * measurement; }
+function tablespoonToCup(measurement) { return 16 * measurement; }
+function tablespoonToTeaspoon(measurement) { return 0.333 * measurement; }
+function teaspoonToTablespoon(measurement) { return 3 * measurement; }
+function teaspoonToCup(measurement) { return 48 * measurement; }
 
 // add vegetable stocks and broths 
 // eventually add items like vegetables 
