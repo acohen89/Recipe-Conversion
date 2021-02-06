@@ -22,7 +22,7 @@ for (let i = 0; i < element.length; i++) {
         if (dictNotNull(ingredient)) {
             let ogNumandMetric = findNumandMetric(element[i].textContent, ingredient);
             if (ogNumandMetric["Num"] != "NULL" && ogNumandMetric["Metric"] != "NULL") {
-               console.log(ingredient["Item"]);
+                console.log(ingredient["Item"]);
                 console.log(ogNumandMetric);
                 let replaced = false;
                 if (element[i].childNodes.length >= 2) {
@@ -86,34 +86,38 @@ function replacement(ogText, ingredientDict, numandMetric) {
         numandMetric["Num"] = convertMetrics(reqMetric, ogMetric, numandMetric["Num"]);
     }
     if (numandMetric["TwoMetrics"]) {
-        if(reqMetric != numandMetric["additionalMetric"]){
+        if (reqMetric != numandMetric["additionalMetric"]) {
             numandMetric["additionalNum"] = convertMetrics(reqMetric, numandMetric["additionalMetric"], numandMetric["additionalNum"])
         }
-    } 
+    }
     if (reqMetric == "Cup") {
         if (!(ingredientDict["Item"] in cupToGrams)) { console.log("Error!"); }
         weight = (numandMetric["Num"] + numandMetric["additionalNum"]) * cupToGrams[ingredientDict["Item"]];
     } else if (reqMetric == "Tablespoon") {
         console.log(ingredientDict["Item"])
         if (!(ingredientDict["Item"] in tablespoonToGrams)) { console.log("Error!"); }
-        weight =(numandMetric["Num"] + numandMetric["additionalNum"]) * tablespoonToGrams[ingredientDict["Item"]];
+        weight = (numandMetric["Num"] + numandMetric["additionalNum"]) * tablespoonToGrams[ingredientDict["Item"]];
     } else if (reqMetric == "Teaspoon") {
         if (!(ingredientDict["Item"] in teaspoonToGrams)) { console.log("Error!"); }
         weight = (numandMetric["Num"] + numandMetric["additionalNum"]) * teaspoonToGrams[ingredientDict["Item"]];
     } else { console.log("Error: Req metric wrong"); }
-    if (weight >= 5) { 
-        replacementText = ogText.replace(numandMetric["OGNum"], Math.round(weight) + "g"); 
-    } 
+    if (weight >= 5) {
+        replacementText = ogText.replace(numandMetric["OGNum"], Math.round(weight) + "g");
+    }
     else {
-         replacementText = ogText.replace(numandMetric["OGNum"], round(weight, 1) + "g"); 
-        }
+        replacementText = ogText.replace(numandMetric["OGNum"], round(weight, 1) + "g");
+    }
+    if("-" in ogTextArr){
+        if(checkForSecondNum["Bool"]){
 
+        }
+    }
     if (numandMetric["TwoNums"] == true) {
         if (numandMetric["TwoNums"] == "NULL") { console.log("Error: TwoNums = NUll"); }
         let temp = replacementText.replace(numandMetric["SecondOGNum"], "");
         replacementText = temp;
     }
-    if(numandMetric["TwoMetrics"]){
+    if (numandMetric["TwoMetrics"]) {
         let temp2 = replacementText.replace(numandMetric["additionalOgFormatMetric"], "");
         replacementText = temp2;
         let temp3 = replacementText.replace(numandMetric["additionalUnit"], "");
@@ -152,11 +156,12 @@ function convertMetrics(metric, ogMetric, num) {
         }
     }
 }
-
 function findNumandMetric(text, ingredient) {
     let textArr = text.split(" ");
-    let retDict = { "Num": "NULL", "Metric": "NULL", "TwoNums": "NULL", "OGNum": "NULL", "SecondOGNum": "NULL", "ogFormatMetric": "NULL", 
-    "TwoMetrics": false, "additionalNum": 0, "additionalMetric": "NULL", "additionalText": "NULL", "additionalOgFormatMetric": "NULL", "additionalUnit": "NULL", "ogSecondNum": "NULL" }
+    let retDict = {
+        "Num": "NULL", "Metric": "NULL", "TwoNums": "NULL", "OGNum": "NULL", "SecondOGNum": "NULL", "ogFormatMetric": "NULL",
+        "TwoMetrics": false, "additionalNum": 0, "additionalMetric": "NULL", "additionalText": "NULL", "additionalOgFormatMetric": "NULL", "additionalUnit": "NULL", "ogSecondNum": "NULL"
+    }
     let foundMetric = false;
     let foundNum = false;
     let go = true;
@@ -167,7 +172,7 @@ function findNumandMetric(text, ingredient) {
             iValOfAddition = i;
             retDict["additionalUnit"] = textArr[i];
 
-        }else if (additionArray.includes(textArr[i].replace(/\s+/g, ' ').trim())){
+        } else if (additionArray.includes(textArr[i].replace(/\s+/g, ' ').trim())) {
             retDict["TwoMetrics"] = true;
             iValOfAddition = i;
             retDict["additionalUnit"] = textArr[i].replace(/\s+/g, ' ').trim();
@@ -369,7 +374,24 @@ function isInt(char) {
     }
     return true;
 }
-
+function checkForSecondNum(arr) {
+    let boolean = false;
+    let retDict = { "bool": false, "secondNum": "NULL" }
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i] in possibleNums) {
+            if (!boolean) {
+                boolean = true;
+            } else {
+                retDict["secondNum"] = arr[i];
+                retDict["bool"] = true;
+            }
+        }
+        if (retDict["bool"]) {
+            return retDict;
+        }
+    }
+    return retDict;
+}
 function dictNotNull(dict) {
     for (k in dict) {
         if (dict[k] == "NULL") {
@@ -393,8 +415,6 @@ function teaspoonToCup(measurement) { return 48 * measurement; }
 // add vegetable stocks and broths 
 // eventually add items like vegetables 
 // add liters and gallons eventually? 
-// add case wher it is like "2 cups plus 1 tablespoon" or "2 cups and a 1/4 of a cup"
-// add case where it's half a cup plus a third of a cup
 // add mini chocolate chips
 // add if it has a period or astrix after item
 // add cormeal and half-and-half
