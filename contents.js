@@ -9,7 +9,7 @@ let additionArray = ["and", "&", "AND", "And", "+", "PLUS", "plus", "Plus"]
 let metricDict = {
     "Tsp": "Teaspoon", "tsp": "Teaspoon", "TSP": "Teaspoon", "teaspoon": "Teaspoon", "Teaspoon": "Teaspoon", "TeaSpoon": "Teaspoon", "TSPs": "Teaspoon", "Tsps": "Teaspoon", "Teaspoons": "Teaspoon", "teaspoons": "Teaspoon", "Teaspoons": "Teaspoon",
     "Tbs": "Tablespoon", "tbs": "Tablespoon", "TBSP": "Tablespoon", "Tbsp": "Tablespoon", "TBS": "Tablespoon", "tablespoon": "Tablespoon", "Tablespoon": "Tablespoon", "TableSpoon": "Tablespoon", "TBSs": "Tablespoon", "Tbss": "Tablespoon", "Tablespoon": "Tablespoon", "tablespoons": "Tablespoon", "Tablespoons": "Tablespoon",
-    "Cups": "Cup", "cups": "Cup", "Cup": "Cup", "cup": "Cup", "CUPS": "Cup", "CUP": "Cup", "c": "Cup", "C": "Cup", "cs": "Cup", "Cs": "Cup", "CS": "Cup"
+    "Cups": "Cup", "cups": "Cup", "c.": "Cup", "Cup": "Cup", "cup": "Cup", "CUPS": "Cup", "CUP": "Cup", "c": "Cup", "C": "Cup", "cs": "Cup", "Cs": "Cup", "CS": "Cup"
 }
 let possibleNums = { "1/2": 0.5, "1/3": 0.333, "1/4": 0.25, "1/8": 0.125, "2/3": 0.666, "3/4": 0.75, "3/8": 0.375, "5/8": 0.625, "7/8": 0.875, "⅛": 0.125, "¼": 0.25, "⅓": 0.333, "⅜": 0.375, "½": 0.5, "⅔": 0.666, "¾": 0.75 }
 let teaspoonToGrams = { "Salt": 5.0, "Yeast": 3.1, "Cinnamon": 2.64, "Baking Powder": 4.0, "Vanilla": 4.0, "extract": 4.0 }
@@ -42,6 +42,7 @@ for (let i = 0; i < element.length; i++) {
                             let copyText = copyOfText(element[i].childNodes);
                             let replacementText = replacement(copyText, ingredient, ogNumandMetric).replace(/\s+/g, ' ').trim();
                             element[i].childNodes = textToNodes(replacementText, element[i].childNodes);
+                            // ^^^ problems here
 
 
                         }
@@ -59,13 +60,21 @@ for (let i = 0; i < element.length; i++) {
 function textToNodes(text, childElements) {
     let textArr = text.split(" ");
     let k = 1;
-    let i = 1
+    let i = 1;
     for (i; i < textArr.length; i++, k++) {
-        childElements[k].textContent = textArr[i] + " ";
+        console.log(!(typeof(childElements[k]) == "undefined"))
+        if(!(typeof(childElements[k]) == "undefined")){
+            // console.log(textArr[i])
+            childElements[k].textContent = textArr[i] + " ";
+        }
     }
     for (k; k < childElements.length; k++) {
 
-        childElements[k].textContent = "";
+       childElements[k].textContent = "";
+    
+    }
+    for (let l = 0; l < childElements.length; l++){
+        //console.log(childElements[l].textContent)
     }
     return childElements;
 }
@@ -76,7 +85,7 @@ function copyOfText(childElements) {
     }
     return retStr;
 }
-function replacement(ogText, ingredientDict, numandMetric) {
+function replacement(ogText, ingredientDict, numandMetric) {    
     let ogTextArr = ogText.split(" ");
     let replacementText = "";
     let ogMetric = numandMetric["Metric"];
@@ -107,11 +116,12 @@ function replacement(ogText, ingredientDict, numandMetric) {
     else {
         replacementText = ogText.replace(numandMetric["OGNum"], round(weight, 1) + "g");
     }
-    if("-" in ogTextArr){
+    /*if("-" in ogTextArr){
         if(checkForSecondNum["Bool"]){
 
         }
-    }
+    }*/
+
     if (numandMetric["TwoNums"] == true) {
         if (numandMetric["TwoNums"] == "NULL") { console.log("Error: TwoNums = NUll"); }
         let temp = replacementText.replace(numandMetric["SecondOGNum"], "");
